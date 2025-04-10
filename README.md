@@ -63,7 +63,7 @@ A Streamlit-based application that uses AI to generate synthetic market research
 
 ## License
 
-MIT
+All rights reserved.
 
 ## Acknowledgements
 

@@ -1,0 +1,13 @@
+# Run these commands in your terminal after creating the GitHub repository
+
+# Add the GitHub repository as the remote origin
+git remote add origin https://github.com/elroy-galbraith/synthetic-market-research.git
+
+# Rename the main branch (if not already done)
+git branch -M main
+
+# Push the code to GitHub
+git push -u origin main
+
+# For subsequent pushes, you can simply use:
+git push
