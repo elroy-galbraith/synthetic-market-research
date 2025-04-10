@@ -21,7 +21,7 @@ A Streamlit-based application that uses AI to generate synthetic market research
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/synthetic-market-research.git
+   git clone https://github.com/elroy-galbraith/synthetic-market-research.git
    cd synthetic-market-research
    ```
 
