@@ -1,5 +1,82 @@
-import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-import apiService from './services/api.js';
+// Use Vue from CDN loaded in index.html
+const { createApp } = Vue;
+
+// API Service
+const apiService = {
+  baseUrl: 'http://localhost:5001/api',
+  
+  async generateResearch(data) {
+    try {
+      const response = await fetch(`${this.baseUrl}/generate/research`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': data.api_key
+        },
+        body: JSON.stringify({
+          target_segment: data.target_segment,
+          product_concept: data.product_concept,
+          research_questions: data.research_questions
+        })
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error generating research:', error);
+      throw new Error('Failed to connect to the API server');
+    }
+  },
+  
+  async getProjects() {
+    try {
+      const response = await fetch(`${this.baseUrl}/projects`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      throw new Error('Failed to connect to the API server');
+    }
+  },
+  
+  async getProject(projectId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/projects/${projectId}`);
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching project ${projectId}:`, error);
+      throw new Error('Failed to connect to the API server');
+    }
+  },
+  
+  async saveProject(data) {
+    try {
+      const response = await fetch(`${this.baseUrl}/projects`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving project:', error);
+      throw new Error('Failed to connect to the API server');
+    }
+  },
+  
+  async deleteProject(projectId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/projects/${projectId}`, {
+        method: 'DELETE'
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`Error deleting project ${projectId}:`, error);
+      throw new Error('Failed to connect to the API server');
+    }
+  }
+};
 
 // Root app component
 const App = {
@@ -544,7 +621,7 @@ const App = {
               
               <!-- Results display (when available) -->
               <div v-if="personas && transcript && analysis">
-                <!-- This would contain the same content as in the "project is loaded" case -->
+                <!-- Same content as in the "project is loaded" case -->
                 <!-- Personas Section -->
                 <div class="card mb-4">
                   <div class="card-header">
@@ -759,9 +836,6 @@ const App = {
     </div>
   `
 };
-
-// Import the API service
-import apiService from './services/api.js';
 
 // Create and mount the Vue app
 createApp(App).mount('#app');
