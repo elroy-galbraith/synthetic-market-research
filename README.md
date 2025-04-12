@@ -1,6 +1,6 @@
 # Synthetic Market Research Engine
 
-A Streamlit-based application that uses AI to generate synthetic market research by creating realistic personas, simulating focus groups, and analyzing feedback for product concepts.
+A modern web application built with the MEVN stack (MongoDB, Express, Vue.js, Node.js) that uses AI to generate synthetic market research by creating realistic personas, simulating focus groups, and analyzing feedback for product concepts.
 
 ## Features
 
@@ -10,9 +10,11 @@ A Streamlit-based application that uses AI to generate synthetic market research
 - **Data Visualization**: Interactive charts and graphics to help understand research findings
 - **Project Management**: Save, load, and manage your research projects
 - **Token Usage Tracking**: Monitor API usage to control costs
+- **Modern Web Interface**: Responsive UI built with Vue.js
 
 ## Requirements
 
+- Node.js 20+
 - Python 3.8+
 - PostgreSQL database
 - OpenAI API key
@@ -25,12 +27,17 @@ A Streamlit-based application that uses AI to generate synthetic market research
    cd synthetic-market-research
    ```
 
-2. Install dependencies:
+2. Install Node.js dependencies:
    ```
-   pip install -r requirements.txt
+   npm install
    ```
 
-3. Set up your environment variables:
+3. Install Python dependencies:
+   ```
+   pip install -r dependencies.txt
+   ```
+
+4. Set up your environment variables:
    - Create a `.env` file in the root directory
    - Add the following environment variables:
      ```
@@ -38,23 +45,38 @@ A Streamlit-based application that uses AI to generate synthetic market research
      DATABASE_URL=your_postgresql_database_url
      ```
 
-4. Run the application:
+5. Start the backend server:
    ```
-   streamlit run app.py
+   cd backend
+   node server.js
+   ```
+
+6. Start the frontend server:
+   ```
+   cd frontend
+   node server.js
    ```
 
 ## Usage
 
-1. Enter your OpenAI API key in the sidebar
-2. Define your product concept, target segment, and research questions
-3. Click "Generate Research" to start the process
-4. Review the personas, focus group transcript, and analysis
-5. Save your research project or download the results
+1. Navigate to the application in your browser (default: http://localhost:5000)
+2. Enter your OpenAI API key in the sidebar
+3. Define your product concept, target segment, and research questions
+4. Click "Generate Research" to start the process
+5. Review the personas, focus group transcript, and analysis
+6. Save your research project or download the results
 
 ## Project Structure
 
-- `app.py`: Main Streamlit application
-- `utils/`: Utility modules
+- `backend/`: Backend server and API
+  - `server.js`: Express.js server
+  - `scripts/`: Python scripts for AI functionality
+  - `utils/`: Python utility modules
+- `frontend/`: Vue.js frontend application
+  - `index.html`: Main HTML file
+  - `src/`: Vue components and services
+  - `server.js`: Frontend static file server
+- `utils/`: Shared utility modules
   - `persona_generator.py`: AI-powered persona creation
   - `focus_group.py`: Focus group simulation
   - `analysis.py`: Transcript analysis
@@ -68,5 +90,6 @@ All rights reserved.
 ## Acknowledgements
 
 - OpenAI for providing the GPT-4o API
-- Streamlit for the web application framework
+- Vue.js for the frontend framework
+- Express.js for the backend server
 - NLTK for additional sentiment analysis
