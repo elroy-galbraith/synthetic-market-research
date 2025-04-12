@@ -1,17 +1,27 @@
-import os
-import json
-from openai import OpenAI
-from openai.types.chat import ChatCompletion
+"""OpenAI service utilities for the Synthetic Market Research Engine."""
 
-# The newest OpenAI model is "gpt-4o" which was released May 13, 2024.
-# Do not change this unless explicitly requested by the user
-DEFAULT_MODEL = "gpt-4o"
+import os
+from openai import OpenAI
+import json
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Constants
+DEFAULT_MODEL = "gpt-4o"  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+DEFAULT_PERSONAS_MODEL = "gpt-4o"
+DEFAULT_FOCUS_GROUP_MODEL = "gpt-4o"
+DEFAULT_ANALYSIS_MODEL = "gpt-4o"
 
 def get_openai_client():
     """Initialize and return an OpenAI client."""
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise ValueError("OpenAI API key is not set. Please set it in the sidebar.")
+        logger.error("No OpenAI API key found in environment")
+        raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
     
     return OpenAI(api_key=api_key)
 
@@ -19,21 +29,12 @@ def validate_api_key():
     """Check if the provided OpenAI API key is valid."""
     try:
         client = get_openai_client()
-        # Make a minimal API call to validate the key
-        response = client.chat.completions.create(
-            model=DEFAULT_MODEL,
-            messages=[{"role": "user", "content": "Hello"}],
-            max_tokens=5
-        )
-        
-        # If we get here, the API key is valid
-        return True, "API key is valid!"
+        # Make a minimal API call to verify the key
+        response = client.models.list()
+        return True
     except Exception as e:
-        error_message = str(e)
-        if "API key" in error_message.lower() or "auth" in error_message.lower():
-            return False, "Invalid API key. Please check and try again."
-        else:
-            return False, f"Error validating API key: {error_message}"
+        logger.error(f"API key validation failed: {str(e)}")
+        return False
 
 def generate_openai_response(
     messages, 
@@ -41,7 +42,7 @@ def generate_openai_response(
     temperature=0.7,
     as_json=False,
     max_tokens=None
-) -> ChatCompletion:
+):
     """
     Generate a response from OpenAI's API.
     
@@ -54,54 +55,44 @@ def generate_openai_response(
         
     Returns:
         ChatCompletion: The API response
+        int: Approximate token count used
     """
-    try:
-        client = get_openai_client()
+    client = get_openai_client()
+    
+    # Configure request parameters
+    params = {
+        "model": model,
+        "messages": messages,
+        "temperature": temperature
+    }
+    
+    # Add optional parameters if provided
+    if max_tokens:
+        params["max_tokens"] = max_tokens
         
-        # Prepare API call parameters
-        params = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-        }
-        
-        # Add optional parameters
-        if as_json:
-            params["response_format"] = {"type": "json_object"}
-        
-        if max_tokens:
-            params["max_tokens"] = max_tokens
-            
-        # Make the API call
-        response = client.chat.completions.create(**params)
-        
-        return response
-    except Exception as e:
-        raise Exception(f"OpenAI API error: {str(e)}")
-        
-def get_response_text(response: ChatCompletion) -> str:
+    if as_json:
+        params["response_format"] = {"type": "json_object"}
+    
+    # Log the request for debugging
+    logger.debug(f"OpenAI request: {json.dumps(params, default=str)}")
+    
+    # Make the API call
+    response = client.chat.completions.create(**params)
+    
+    # Calculate approximate token usage
+    token_count = response.usage.total_tokens
+    
+    return response, token_count
+
+def get_response_text(response):
     """Extract the text content from an OpenAI API response."""
     return response.choices[0].message.content
 
-def get_response_json(response: ChatCompletion) -> dict:
+def get_response_json(response):
     """Extract and parse the JSON content from an OpenAI API response."""
-    content = get_response_text(response)
+    content = response.choices[0].message.content
     try:
         return json.loads(content)
     except json.JSONDecodeError:
-        # If the response isn't valid JSON, try to find JSON within the content
-        try:
-            # Look for content between triple backticks
-            import re
-            json_match = re.search(r'```json\n([\s\S]*?)\n```', content)
-            if json_match:
-                return json.loads(json_match.group(1))
-            
-            # Look for content between curly braces
-            json_match = re.search(r'({[\s\S]*})', content)
-            if json_match:
-                return json.loads(json_match.group(1))
-                
-            raise ValueError("Could not extract JSON from response")
-        except Exception as e:
-            raise ValueError(f"Failed to parse JSON response: {str(e)}\nResponse: {content}")
+        logger.error(f"Failed to parse response as JSON: {content}")
+        raise ValueError("OpenAI response is not valid JSON")
